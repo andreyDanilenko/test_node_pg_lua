@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build / compile output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!env.example
+
+# Logs and debug
+logs/
+*.log
+npm-debug.log*
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE (optional — remove lines if you commit shared editor config)
+.idea/
+
+# LÖVE / Lua (packaged builds)
+*.love
+
+# Misc
+*.swp
+*.swo
+*~
