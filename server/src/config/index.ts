@@ -29,4 +29,6 @@ export const config = {
   },
 };
 
-export const databaseUrl = `postgresql://${config.db.user}:${config.db.password}@${config.db.host}:${config.db.port}/${config.db.name}`;
+export const databaseUrl =
+  process.env.DATABASE_URL ||
+  `postgresql://${config.db.user}:${config.db.password}@${config.db.host}:${config.db.port}/${config.db.name}`;

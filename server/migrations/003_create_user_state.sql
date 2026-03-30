@@ -14,6 +14,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_user_reward_state_updated_at ON user_reward_state;
 CREATE TRIGGER update_user_reward_state_updated_at
     BEFORE UPDATE ON user_reward_state
     FOR EACH ROW
