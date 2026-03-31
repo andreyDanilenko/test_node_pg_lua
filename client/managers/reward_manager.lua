@@ -1,51 +1,97 @@
+local api = require("managers.api")
+
 local RewardManager = {
-    lastClaimTime = 0,
-    currentDay = 0,
-    COOLDOWN = 10,
-    RESET = 20,
-    values = {100, 200, 300, 400, 500, 600, 1000}
+    state = {
+        currentDay = 1,
+        canClaim = false,
+        nextClaimInSeconds = nil,
+        message = "Загрузка...",
+        coins = 0,
+    },
+    countdown = nil,
+    initialized = false,
 }
 
-function RewardManager:getData()
-    local diff = love.timer.getTime() - self.lastClaimTime
-    if self.lastClaimTime == 0 then return "ready", 1
-    elseif diff < self.COOLDOWN then return "wait", math.ceil(self.COOLDOWN - diff)
-    elseif diff <= self.RESET then return "ready", (self.currentDay % 7) + 1
-    else return "reset", 1 end
+function RewardManager:init()
+    -- 1) гость
+    local code, data = api.guest_login()
+    if code ~= 200 or not data or not data.success then
+        self.state.message = "Auth failed"
+        return
+    end
+
+    -- 2) стартовое состояние
+    local ok, _ = self:refreshState()
+    if ok then
+        self.initialized = true
+    end
+end
+
+function RewardManager:refreshState()
+    local code, data = api.get_state()
+    if code == 200 and data and data.success then
+        local s = data.data
+        self.state.currentDay = s.currentDay
+        self.state.canClaim = s.canClaim
+        self.state.message = s.message
+        self.state.nextClaimInSeconds = s.nextClaimInSeconds
+
+        if s.nextClaimInSeconds then
+            self.countdown = s.nextClaimInSeconds
+        else
+            self.countdown = nil
+        end
+
+        return true, s
+    else
+        self.state.message = "Error fetching state"
+        return false, nil
+    end
+end
+
+function RewardManager:update(dt)
+    if self.countdown then
+        self.countdown = self.countdown - dt
+        if self.countdown <= 0 then
+            self.countdown = nil
+            self:refreshState()
+        end
+    end
 end
 
 function RewardManager:getStatusText()
-    local state, value = self:getData()
-    if state == "ready" then
-        if self.lastClaimTime == 0 then
-            return "Первая награда доступна (День 1)!", true
-        end
-        return string.format("День %d готов к получению!", value), true
+    if not self.initialized then
+        return self.state.message or "Загрузка..."
     end
 
-    if state == "wait" then
-        return string.format("Ждите %d сек. до следующего дня", value), false
+    if self.countdown and self.countdown > 0 then
+        local secs = math.ceil(self.countdown)
+        return string.format("Ждите %d сек. до следующей награды", secs)
     end
 
-    -- state == "reset"
-    return "Время вышло! Серия сброшена до Дня 1", true
+    return self.state.message or "..."
 end
 
 function RewardManager:claim()
-    local state = self:getData()
-
-    if state == "wait" then
-        return false, 0, "Нужно подождать!"
+    if not self.initialized then
+        return false, 0, "Ещё инициализируемся..."
     end
 
-    if state == "reset" then
-        self.currentDay = 0
-    end
+    local code, data = api.claim()
+    if code == 200 and data and data.success then
+        local r = data.data
+        self.state.coins = self.state.coins + (r.amount or 0)
+        self.state.message = r.message or "OK"
 
-    self.currentDay = (self.currentDay % 7) + 1
-    local amount = self.values[self.currentDay]
-    self.lastClaimTime = love.timer.getTime()
-    return true, amount, "Получено: " .. amount .. " монет!"
+        -- после клейма сразу подтягиваем новое состояние
+        self:refreshState()
+
+        return true, r.amount or 0, r.message or "OK"
+    else
+        self.state.message = (data and data.message)
+            or "Сегодня награда получена. Приходите позже."
+        return false, 0, self.state.message
+    end
 end
 
 return RewardManager
