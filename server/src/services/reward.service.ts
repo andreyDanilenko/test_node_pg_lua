@@ -105,16 +105,29 @@ export class RewardService {
         success: true,
         day: 1,
         amount: reward.amount,
-        message: `Streak broken! Starting over. +${reward.amount} coins`,
+        message: `Серия прервана! Новый цикл начался с Дня 1. +${reward.amount} монет`,
       };
     }
-  
+
+    // Если цикл фиксированный и игрок уже взял максимальный день,
+    // не даём бесконечно фармить день maxDay каждые cooldown секунд.
+    if (
+      config.cycleBehavior === 'fixed' &&
+      lastReward &&
+      lastReward.day === config.rewards.maxDay
+    ) {
+      return {
+        success: false,
+        message: 'Серия завершена: сегодня вы уже получили максимальную награду. Новая серия начнётся после сброса таймера.',
+      };
+    }
+
     // Проверка кулдауна
     if (timePassed < cooldownMs) {
       const secondsLeft = Math.ceil((cooldownMs - timePassed) / 1000);
       return {
         success: false,
-        message: `Please wait ${Math.floor(secondsLeft / 60)}m ${secondsLeft % 60}s`,
+        message: `Сегодня награда уже получена. Приходите позже — осталось ${secondsLeft} сек.`,
       };
     }
   
@@ -137,12 +150,18 @@ export class RewardService {
     const reward = await this.rewardRepo.saveReward(userId, nextDay, amount);
     await this.rewardRepo.updateState(userId, nextDay, new Date(reward.claimedAt));
   
-    let message = `+${amount} coins for day ${nextDay}!`;
-    
+    let message = `+${amount} монет за День ${nextDay}!`;
+
     if (nextDay === config.rewards.maxDay && config.cycleBehavior === 'fixed') {
-      message += 'Maximum day reached!';
-    } else if (nextDay === 1 && lastReward?.day === config.rewards.maxDay) {
-      message += ' New cycle started!';
+      message = `${message} Это последняя награда в серии — завтра новая награда недоступна.`;
+    } else if (nextDay === config.rewards.maxDay && config.cycleBehavior === 'reset') {
+      message = `${message} Серия завершена — завтра начнётся новая с Дня 1.`;
+    } else if (
+      nextDay === 1 &&
+      lastReward?.day === config.rewards.maxDay &&
+      config.cycleBehavior === 'reset'
+    ) {
+      message = `Новая серия началась! +${amount} монет за День 1.`;
     }
   
     return {
