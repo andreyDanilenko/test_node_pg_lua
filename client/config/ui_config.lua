@@ -24,7 +24,7 @@ UIConfig.BUTTON_COLORS = {
 }
 
 UIConfig.FONT = {
-    PATH = "fonts/Roboto.ttf",
+    PATH = "assets/fonts/Roboto.ttf",
     SIZE = 16
 }
 
