@@ -113,21 +113,24 @@ export class RewardService {
     // не даём бесконечно фармить день maxDay каждые cooldown секунд.
     if (
       config.cycleBehavior === 'fixed' &&
-      lastReward &&
-      lastReward.day === config.rewards.maxDay
+      lastReward?.day === config.rewards.maxDay &&
+      timePassed <= resetMs 
     ) {
       return {
         success: false,
-        message: 'Серия завершена: сегодня вы уже получили максимальную награду. Новая серия начнётся после сброса таймера.',
+        message: 'Серия завершена. Чтобы начать заново, дождитесь сброса серии по времени.',
       };
     }
 
-    // Проверка кулдауна
-    if (timePassed < cooldownMs) {
-      const secondsLeft = Math.ceil((cooldownMs - timePassed) / 1000);
+    // В режиме fixed запрещаем брать награду, ТОЛЬКО если время сброса еще прошло
+    if (
+      config.cycleBehavior === 'fixed' &&
+      lastReward?.day === config.rewards.maxDay &&
+      timePassed <= resetMs 
+    ) {
       return {
         success: false,
-        message: `Сегодня награда уже получена. Приходите позже — осталось ${secondsLeft} сек.`,
+        message: 'Серия завершена. Чтобы начать заново, дождитесь сброса серии по времени.',
       };
     }
   
