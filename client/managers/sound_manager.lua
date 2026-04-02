@@ -5,8 +5,6 @@ local SoundManager = {
 
 function SoundManager:load()
     -- Загружаем звуки
-    -- В проекте сейчас есть только mp3 в client/assets/sounds.
-    -- Если добавишь отдельные файлы под каждый звук — просто замени пути ниже.
     local sfxPath = "assets/sounds"
     self.sounds.click   = love.audio.newSource(sfxPath .. "/success.wav", "static")
     self.sounds.success = love.audio.newSource(sfxPath .. "/success.wav", "static")

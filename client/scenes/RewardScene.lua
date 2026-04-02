@@ -170,8 +170,7 @@ function RewardScene:mousepressed(x, y, button)
             
             -- ЗВУКИ ПРИ УСПЕХЕ!
             SoundManager:play("success")  -- Звук успеха
-            SoundManager:play("coin")     -- Звук монет
-            
+            -- SoundManager:play("coin")  -- Звук монет пока отключен чтоб не дублировать
             -- Запускаем конфетти
             self:startConfetti()
         else
