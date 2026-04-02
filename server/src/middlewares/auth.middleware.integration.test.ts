@@ -50,6 +50,9 @@ describe('auth plugin (integration)', () => {
       async getState(userId: string): Promise<UserRewardState | null> {
         return rewardStates.get(userId) ?? null;
       },
+      async getTotalClaimedCoins(): Promise<number> {
+        return 0;
+      },
       async getLastReward(): Promise<Reward | null> {
         return null;
       },

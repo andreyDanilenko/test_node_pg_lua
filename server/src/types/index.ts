@@ -30,6 +30,7 @@ export interface User {
     canClaim: boolean;
     nextClaimInSeconds: number | null;
     message: string;
+    coins: number;
   }
   
   export interface ClaimResponse {

@@ -35,6 +35,7 @@ function RewardManager:refreshState()
         self.state.canClaim = s.canClaim
         self.state.message = s.message
         self.state.nextClaimInSeconds = s.nextClaimInSeconds
+        self.state.coins = tonumber(s.coins) or 0
 
         if s.nextClaimInSeconds then
             self.countdown = s.nextClaimInSeconds
@@ -80,10 +81,9 @@ function RewardManager:claim()
     local code, data = api.claim()
     if code == 200 and data and data.success then
         local r = data.data
-        self.state.coins = self.state.coins + (r.amount or 0)
         self.state.message = r.message or "OK"
 
-        -- после клейма сразу подтягиваем новое состояние
+        -- баланс с сервера (сумма по таблице rewards)
         self:refreshState()
 
         return true, r.amount or 0, r.message or "OK"

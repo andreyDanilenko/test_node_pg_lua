@@ -40,6 +40,9 @@ describe('RewardController (HTTP, mocked service)', () => {
       async getState(): Promise<UserRewardState | null> {
         return null;
       },
+      async getTotalClaimedCoins(): Promise<number> {
+        return 0;
+      },
       async getLastReward(): Promise<Reward | null> {
         return null;
       },
@@ -75,6 +78,7 @@ describe('RewardController (HTTP, mocked service)', () => {
       canClaim: false,
       nextClaimInSeconds: 60,
       message: 'Wait',
+      coins: 100,
     };
     const getState = vi.fn().mockResolvedValue(mockState);
     const claim = vi.fn();

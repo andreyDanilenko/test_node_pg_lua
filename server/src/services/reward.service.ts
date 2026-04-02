@@ -6,14 +6,19 @@ export class RewardService {
   constructor(private rewardRepo: IRewardRepository) {}
 
   async getState(userId: string): Promise<RewardStateResponse> {
+    const coins = await this.rewardRepo.getTotalClaimedCoins(userId);
+    const withCoins = (
+      partial: Omit<RewardStateResponse, 'coins'>
+    ): RewardStateResponse => ({ ...partial, coins });
+
     const state = await this.rewardRepo.getState(userId);
     if (!state) {
-      return {
+      return withCoins({
         currentDay: 1,
         canClaim: true,
         nextClaimInSeconds: null,
         message: 'Ready to claim!',
-      };
+      });
     }
 
     const now = Date.now();
@@ -21,12 +26,12 @@ export class RewardService {
 
     // Первая награда
     if (!lastClaimed) {
-      return {
+      return withCoins({
         currentDay: state.currentDay,
         canClaim: true,
         nextClaimInSeconds: null,
         message: `Ready to claim day ${state.currentDay}!`,
-      };
+      });
     }
 
     const cooldownMs = config.rewards.cooldownSeconds * 1000;
@@ -35,40 +40,40 @@ export class RewardService {
 
     // Проверяем сброс серии
     if (timePassed > resetMs) {
-      return {
+      return withCoins({
         currentDay: 1,
         canClaim: true,
         nextClaimInSeconds: null,
         message: 'Streak broken! Starting from day 1.',
-      };
+      });
     }
 
     // Проверяем возможность получения
     if (timePassed >= cooldownMs) {
       let nextDay = state.currentDay;
-      
+
       if (config.cycleBehavior === 'reset') {
         nextDay = (state.currentDay % config.rewards.maxDay) + 1;
       } else {
         nextDay = Math.min(state.currentDay + 1, config.rewards.maxDay);
       }
-      
-      return {
+
+      return withCoins({
         currentDay: nextDay,
         canClaim: true,
         nextClaimInSeconds: null,
         message: `Ready to claim day ${nextDay}!`,
-      };
+      });
     }
 
     // Нельзя получить
     const secondsLeft = Math.ceil((cooldownMs - timePassed) / 1000);
-    return {
+    return withCoins({
       currentDay: state.currentDay,
       canClaim: false,
       nextClaimInSeconds: secondsLeft,
       message: `Wait ${Math.floor(secondsLeft / 60)}m ${secondsLeft % 60}s`,
-    };
+    });
   }
 
   async claim(userId: string): Promise<ClaimResponse> {

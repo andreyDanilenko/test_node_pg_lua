@@ -26,6 +26,16 @@ export class RewardRepository implements IRewardRepository {
     return result.rows[0] || null;
   }
 
+  async getTotalClaimedCoins(userId: string): Promise<number> {
+    const result = await this.pool.query<{ total: string | number | null }>(
+      `SELECT COALESCE(SUM(amount), 0) AS total FROM rewards WHERE user_id = $1`,
+      [userId]
+    );
+    const raw = result.rows[0]?.total;
+    if (raw == null) return 0;
+    return typeof raw === 'number' ? raw : Number(raw);
+  }
+
   async getLastReward(userId: string): Promise<Reward | null> {
     const result = await this.pool.query<Reward>(
       `SELECT id, user_id as "userId", day, amount, claimed_at as "claimedAt"

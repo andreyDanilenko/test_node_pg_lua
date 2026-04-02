@@ -44,6 +44,26 @@ describe('RewardRepository', () => {
     expect(out).toBeNull();
   });
 
+  it('getTotalClaimedCoins returns numeric sum', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ total: '42' }] });
+
+    const out = await repo.getTotalClaimedCoins('u1');
+
+    expect(out).toBe(42);
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining('SUM(amount)'),
+      ['u1']
+    );
+  });
+
+  it('getTotalClaimedCoins returns 0 when null total', async () => {
+    pool.query.mockResolvedValueOnce({ rows: [{ total: null }] });
+
+    const out = await repo.getTotalClaimedCoins('u1');
+
+    expect(out).toBe(0);
+  });
+
   it('getLastReward returns row or null', async () => {
     const row = {
       id: 'r1',
