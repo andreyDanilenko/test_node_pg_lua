@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 import { config } from './config/index.js';
 import { createPool } from './config/database.js';
-import { authMiddleware } from './middlewares/auth.middleware.js';
+import { authPlugin } from './middlewares/auth.plugin.js';
 import { UserRepository } from './repositories/user.repository.js';
 import { RewardRepository } from './repositories/reward.repository.js';
 import { createAuthContainer } from './containers/auth.container.js';
@@ -21,8 +21,7 @@ await app.register(cors, { origin: true });
 // JWT
 await app.register(jwt, { secret: config.jwtSecret });
 
-// Middleware
-app.addHook('preHandler', authMiddleware);
+await app.register(authPlugin);
 
 const pool = createPool();
 
