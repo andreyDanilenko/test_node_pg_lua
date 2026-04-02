@@ -7,13 +7,16 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsup src/server.ts scripts/migrate.ts --format esm --clean --no-dts --entry.server src/server.ts --entry.migrate scripts/migrate.ts",
     "start": "node dist/server.js",
-    "migrate": "node dist/migrate.js"
+    "migrate": "node dist/migrate.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",
     "@fastify/jwt": "^10.0.0",
     "dotenv": "^17.3.1",
     "fastify": "^5.8.4",
+    "fastify-plugin": "^5.0.0",
     "pg": "^8.20.0",
     "zod": "^4.3.6"
   },
@@ -21,6 +24,7 @@
     "@types/node": "^25.5.0",
     "@types/pg": "^8.20.0",
     "tsup": "^8.5.1",
+    "vitest": "^3.0.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   }
