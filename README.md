@@ -1,5 +1,5 @@
 # Тестовое задание: Full Stack Developer (Node.js + PostgreSQL + Lua)
-<img src="preview.png" width="100%" height="300">
+<img src="preview.png" width="100%" height="500">
 ## Контекст
 Необходимо с нуля реализовать backend на Node.js, базу данных PostgreSQL и простой клиент на Lua (движок Defold или LÖVE). Задача — собрать минимально рабочую клиент-серверную механику, похожую на реальную игровую фичу.
 
